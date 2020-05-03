@@ -4,3 +4,9 @@
 *.user
 
 OneDimOptimization/.vs/
+
+GradientDescent/.vs/
+
+GradientDescent/bin/
+
+GradientDescent/intermediates/
