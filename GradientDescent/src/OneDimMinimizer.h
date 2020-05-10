@@ -3,8 +3,9 @@
 #include <cmath>
 #include "Matrix.h"
 
-double golden_ratio(const func& f, vec2& a, vec2& b, const vec2& dir, double eps)
+int golden_ratio(const func& f, vec2& a, vec2& b, const vec2& dir, double eps, double& lambda)
 {
+	int k = 0;
 	double diff = (b - a).norm();
 	vec2 dir_normalized = dir.normalize();
 
@@ -18,6 +19,7 @@ double golden_ratio(const func& f, vec2& a, vec2& b, const vec2& dir, double eps
 
 	double f1 = f(x1);
 	double f2 = f(x2);
+	k += 2;
 
 	for (int i = 0; i <= n; i++)
 	{
@@ -28,6 +30,7 @@ double golden_ratio(const func& f, vec2& a, vec2& b, const vec2& dir, double eps
 			x1 = a + (b - a) * 0.381966011;
 			f2 = f1;
 			f1 = f(x1);
+			k++;
 		}
 		else
 		{
@@ -36,6 +39,7 @@ double golden_ratio(const func& f, vec2& a, vec2& b, const vec2& dir, double eps
 			x2 = b - (b - a) * 0.381966011;
 			f1 = f2;
 			f2 = f(x2);
+			k++;
 		}
 
 		prevDiff = diff;
@@ -47,14 +51,18 @@ double golden_ratio(const func& f, vec2& a, vec2& b, const vec2& dir, double eps
 	vec2 result = (x1 + x2) / 2;
 
 	vec2 dist = result - saved;
-	return dist.x / dir.x;
+	lambda = dist.x / dir.x;
+
+	return k;
 }
 
-vec2 interval(const func& f, vec2& x0, const vec2& dir, double h)
+int interval(const func& f, vec2& x0, const vec2& dir, double h, vec2& x1)
 {
-	vec2 x1 = x0 + dir * h;
+	int k = 0;
+	x1 = x0 + dir * h;
 	double f0 = f(x0);
 	double f1 = f(x1);
+	k += 2;
 
 	while (f0 > f1)
 	{
@@ -63,13 +71,17 @@ vec2 interval(const func& f, vec2& x0, const vec2& dir, double h)
 
 		f0 = f(x0);
 		f1 = f(x1);
+		k += 2;
 	}
 
-	return x1;
+	return k;
 }
 
-double minimize(const func& f, vec2 a, const vec2& dir, double eps)
+int minimize(const func& f, vec2 a, const vec2& dir, double eps, double& lambda)
 {
-	vec2 b = interval(f, a, dir, 1.0);
-	return golden_ratio(f, a, b, dir, eps);
+	vec2 b;
+	int k1 = interval(f, a, dir, 1.0, b);
+	int k2 = golden_ratio(f, a, b, dir, eps, lambda);
+
+	return k1 + k2;
 }

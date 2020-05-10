@@ -1,7 +1,9 @@
 #pragma once
 
+#include <vector>
 #include "Matrix.h"
 #include "OneDimMinimizer.h"
+#include "ResultInfo.h"
 
 struct broyden_info 
 {
@@ -13,14 +15,20 @@ struct broyden_info
 	int maxiter;
 };
 
-int broyden(broyden_info& info, vec2& min)
+result_info broyden(broyden_info& info, std::vector<vec2>& points)
 {
+	result_info result;
+	result.calc_count = 0;
+	result.iter_count = 0;
+
 	vec2 x0 = info.x0;
 	func f = info.f;
 	grad g = info.g;
 	double eps = info.eps;
 	double minimize_eps = info.minimize_eps;
 	int maxiter = info.maxiter;
+
+	points.push_back(x0);
 
 	vec2 grad0(g, x0);
 	double diff = grad0.norm();
@@ -37,10 +45,12 @@ int broyden(broyden_info& info, vec2& min)
 		vec2 dx = -eta * grad0;
 
 		// Calculate step size
-		double lambda = minimize(f, x0, dx, minimize_eps);
+		double lambda;
+		result.calc_count += minimize(f, x0, dx, minimize_eps, lambda);
 
 		// Calculate new approximation point
 		vec2 x1 = x0 + lambda * dx;
+		points.push_back(x1);
 
 		// Calculate difference 
 		vec2 grad1 = vec2(g, x1);
@@ -58,9 +68,8 @@ int broyden(broyden_info& info, vec2& min)
 		eta = eta + d_eta;
 		
 		x0 = x1;
-		count++;
+		result.iter_count++;
 	}
 
-	min = x0;
-	return count;
+	return result;
 }

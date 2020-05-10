@@ -1,8 +1,10 @@
 #pragma once
 
+#include <vector>
 #include <functional>
 #include "Matrix.h"
 #include "OneDimMinimizer.h"
+#include "ResultInfo.h"
 
 struct newton_info {
 	func f;
@@ -14,8 +16,12 @@ struct newton_info {
 };
 
 
-int lambda_newton(newton_info& info, vec2& min)
+result_info lambda_newton(newton_info& info, std::vector<vec2>& points)
 {
+	result_info result;
+	result.calc_count = 0;
+	result.iter_count = 0;
+
 	vec2 x0 = info.x0;
 	func f = info.f;
 	grad g = info.g;
@@ -28,6 +34,8 @@ int lambda_newton(newton_info& info, vec2& min)
 	double diff_x = 1.0;
 	double diff_f = 1.0;
 	int count = 0;
+
+	points.push_back(x0);
 
 	while (diff_x >= delta && diff_f >= eps && count != maxiter)
 	{
@@ -42,10 +50,12 @@ int lambda_newton(newton_info& info, vec2& min)
 		vec2 dx = -mult.normalize();
 
 		// Calculate step size
-		double lambda = minimize(f, x0, dx, minimize_eps);
+		double lambda;
+		result.calc_count += minimize(f, x0, dx, minimize_eps, lambda);
 
 		// Calculate new approximation point
 		vec2 x1 = x0 + lambda * dx;
+		points.push_back(x1);
 
 		// Calculate ||x[k + 1] - x[k]||
 		diff_x = (x1 - x0).norm();
@@ -53,15 +63,18 @@ int lambda_newton(newton_info& info, vec2& min)
 		// Calculate |f[k + 1] - f[k]|
 		diff_f = abs(f(x1) - f(x0));
 		x0 = x1;
-		count++;
+		result.iter_count++;
 	}
 
-	min = x0;
-	return count;
+	return result;
 }
 
-int modified_newton(newton_info& info, vec2& min)
+result_info modified_newton(newton_info& info, std::vector<vec2>& points)
 {
+	result_info result;
+	result.calc_count = 0;
+	result.iter_count = 0;
+
 	vec2 x0 = info.x0;
 	func f = info.f;
 	grad g = info.g;
@@ -74,6 +87,8 @@ int modified_newton(newton_info& info, vec2& min)
 	double diff_x = 1.0;
 	double diff_f = 1.0;
 	int count = 0;
+
+	points.push_back(x0);
 
 	// Calculate second partial derivative matrix at the point x0
 	mat2 H_inv = mat2(h, x0).inverse();
@@ -88,10 +103,12 @@ int modified_newton(newton_info& info, vec2& min)
 		vec2 dx = -mult.normalize();
 
 		// Calculate step size
-		double lambda = minimize(f, x0, dx, minimize_eps);
+		double lambda;
+		result.calc_count += minimize(f, x0, dx, minimize_eps, lambda);
 
 		// Calculate new approximation point
 		vec2 x1 = x0 + dx * lambda;
+		points.push_back(x1);
 
 		// Calculate ||x[k + 1] - x[k]||
 		diff_x = (x1 - x0).norm();
@@ -99,9 +116,8 @@ int modified_newton(newton_info& info, vec2& min)
 		// Calculate |f[k + 1] - f[k]|
 		diff_f = abs(f(x1) - f(x0));
 		x0 = x1;
-		count++;
+		result.iter_count++;
 	}
 
-	min = x0;
-	return count;
+	return result;
 }
