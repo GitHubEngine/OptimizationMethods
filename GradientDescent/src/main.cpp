@@ -68,7 +68,7 @@ hesse h2 =
 int main()
 {
 	newton_info info;
-	info.x0 = vec2(213.0, -998.0);
+	info.x0 = vec2(1.0, -1.0);
 	info.f = f;						// Функция
 	info.g = g;						// Градиент
 	info.h = h;						// Матрица вторых производных
@@ -79,8 +79,16 @@ int main()
 
 	std::vector<vec2> points1, points2, points3;	// Вектор точек
 	result_info res1, res2, res3;					// Количество итераций + количество вычислений функций
-	res1 = lambda_newton(info, points1);
-	res2 = modified_newton(info, points2);
+
+	for (double eps = 1.0e-1; eps > 1.0e-7; eps *= 0.1)
+	{
+		res1 = lambda_newton(info, points1);
+		vec2 min1 = points1.back();
+
+		//Вывод всего что есть
+		points1.clear();
+
+	}
 
 	broyden_info b_info;
 	b_info.f = f;
