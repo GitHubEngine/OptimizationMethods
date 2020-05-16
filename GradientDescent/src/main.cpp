@@ -22,20 +22,20 @@ hesse h =
 	[](vec2 x) { return 200; }
 };
 
-func f1 = [](vec2 x) { return 100 * (x.y - x.x * x.x) * (x.y - x.x * x.x) + (1 - x.x) * (1 - x.x); };
+func f1 = [](vec2 x) { return 100.0 * (x.y - x.x * x.x) * (x.y - x.x * x.x) + (1.0 - x.x) * (1.0 - x.x); };
 
 grad g1 =
 {
-	[](vec2 x) { return 2 * x.x; },
-	[](vec2 x) { return 2 * x.y; }
+[](vec2 x) { return -400.0 * x.x * (x.y - x.x * x.x) + 2.0 * (x.x - 1.0); },
+[](vec2 x) { return 200.0 * (x.y - x.x * x.x); }
 };
 
 hesse h1 =
 {
-	[](vec2 x) { return 2; },
-	[](vec2 x) { return 0; },
-	[](vec2 x) { return 0; },
-	[](vec2 x) { return 2; }
+[](vec2 x) { return -400.0 * (x.y - 3.0 * x.x * x.x) + 2.0; },
+[](vec2 x) { return -400.0 * x.x; },
+[](vec2 x) { return -400.0 * x.x; },
+[](vec2 x) { return 200.0; }
 };
 
 
@@ -68,36 +68,35 @@ hesse h2 =
 int main()
 {
 	newton_info info;
-	info.x0 = vec2(1.0, -1.0);
-	info.f = f;						// Функция
-	info.g = g;						// Градиент
-	info.h = h;						// Матрица вторых производных
+	info.x0 = vec2(2, 2);
+	info.f = f2;					// Функция
+	info.g = g2;					// Градиент
+	info.h = h2;					// Матрица вторых производных
 	info.maxiter = 100000;			// Максимальное количество итераций
 	info.minimize_eps = 1.0e-12;	// Эпсилон для одномерной минимизаций
-	info.delta = 1.0e-12;			// Дельта для ||x(k+1) - x(k)||
-	info.eps = 1.0e-12;				// Эпсилон для |f(k+1) - f(k)|
+	info.delta = 0.001;				// Дельта для ||x(k+1) - x(k)||
+	info.eps = 0.001;				// Эпсилон для |f(k+1) - f(k)|
 
 	std::vector<vec2> points1, points2, points3;	// Вектор точек
 	result_info res1, res2, res3;					// Количество итераций + количество вычислений функций
 
-	for (double eps = 1.0e-1; eps > 1.0e-7; eps *= 0.1)
-	{
-		res1 = lambda_newton(info, points1);
-		vec2 min1 = points1.back();
+	res1 = lambda_newton(info, points1);
+	vec2 min1 = points1.back();
 
-		//Вывод всего что есть
-		points1.clear();
+	//Вывод всего что есть
+	points1.clear();
 
-	}
 
 	broyden_info b_info;
-	b_info.f = f;
-	b_info.g = g;
-	b_info.eps = 1.0e-12;
-	b_info.minimize_eps = 1.0e-12;
+	b_info.f = f2;
+	b_info.g = g2;
+	b_info.eps = 0.001;
+	b_info.minimize_eps = 1.0e-8;
 	b_info.maxiter = 100000;
-	b_info.x0 = vec2(10.0, 10.0);
+	b_info.x0 = vec2(2, 2);
 
 	res3 = broyden(b_info, points3);
+
+	vec2 min = points3[points3.size() - 2];
 	return 0;
 }
