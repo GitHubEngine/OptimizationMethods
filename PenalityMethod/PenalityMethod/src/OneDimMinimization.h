@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <vector>
 #include <cmath>
 #include "vec2.h"
 
@@ -54,40 +55,58 @@ int golden_ratio(std::function<double(vec2)> f, vec2& a, vec2& b, double eps, ve
 
 int interval(std::function<double(vec2)> f, vec2& x0, const vec2& dir, vec2& b)
 {
+	std::vector<std::pair<vec2, vec2>> points;
 	int k = 0;
-	int h = 1;
-	vec2 x1 = x0 + dir;
-	vec2 x2 = x0 - dir;
+	double h = 0.001;
+	vec2 x1;
 	double f0 = f(x0);
-	double f1 = f(x1);
-	double f2 = f(x2);
-	k += 3;
+	double f1 = f(x0 + h * dir);
+	k += 2;
 
 	if (f0 > f1)
 	{
-		while (f0 > f1)
-		{
-			h *= 2;
-			x1 = x0 + dir * h;
-			f1 = f(x1);
-			k++;
-		}
-
-		b = x1;
+		x1 = x0 + h * dir;
 	}
-	else if (f0 > f2)
+	else
 	{
-		while (f0 > f2)
-		{
-			h *= 2;
-			x2 = x0 - dir * h;
-			f2 = f(x2);
-			k++;
-		}
-
-		b = x2;
+		x1 = x0 - h * dir;
+		h = -h;
 	}
 
+	h *= 2;
+	x1 = x0 + h * dir;
+	
+	points.push_back(std::make_pair(x0, x1));
+	
+	f0 = f(x0);
+	f1 = f(x1);
+	k += 2;
+
+	x0 = x1;
+
+	while (f0 > f1)
+	{
+		h *= 2;
+		x1 = x0 + h * dir;
+
+		points.push_back(std::make_pair(x0, x1));
+		f0 = f(x0);
+		f1 = f(x1);
+		k += 2;
+
+		x0 = x1;
+	}
+
+	if (points.size() > 1)
+	{
+		x0 = points[points.size() - 2].first;
+		b = points[points.size() - 2].second;
+	}
+	else
+	{
+		x0 = points[0].first;
+		b = points[0].second;
+	}
 
 	return k;
 }

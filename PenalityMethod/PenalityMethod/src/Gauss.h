@@ -19,8 +19,8 @@ GaussResult Gauss(std::function<double(vec2)>& f, vec2 x0, vec2& x1, double delt
 
 	do
 	{
-		res.calcCount += minimize(f, x0, vec2(0.01, 0), x1);
-		res.calcCount += minimize(f, x1, vec2(0, 0.01), x1);
+		res.calcCount += minimize(f, x0, vec2(1, 0), x1);
+		res.calcCount += minimize(f, x1, vec2(0, 1), x1);
 
 		f2 = f(x1); res.calcCount++;
 

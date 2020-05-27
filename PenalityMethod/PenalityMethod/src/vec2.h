@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <cmath>
 
 class vec2
@@ -67,4 +68,10 @@ template<typename T>
 vec2 operator/(const vec2& v, T a)
 {
 	return vec2(v.x / a, v.y / a);
+}
+
+inline std::ostream& operator<<(std::ostream& os, const vec2& x)
+{
+	os << "(" << x.x << "," << x.y << ")";
+	return os;
 }
