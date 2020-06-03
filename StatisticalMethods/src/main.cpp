@@ -1,6 +1,8 @@
 #include <iostream>
+#include <fstream>
 #include <functional>
 #include <vector>
+#include <chrono>
 
 #include "vec2.h"
 #include "Statistics.h"
@@ -25,22 +27,55 @@ function<double(vec2)> f = [](vec2 x)
 
 int main()
 {
-	vec2 x, x1, x2, x3;
-	cout << "Simple" << endl;
-	SimpleRandomSearch(f, x, 0.01, 0.6);
+	ofstream out("simple.csv");
+	vec2 x;
+
+	out << "eps;P;N;(x, y);f(x, y);time" << endl;
+	vector<double> eps = { 1, 0.5, 0.1, 0.05, 0.01, 0.005 };
+	vector<double> P = { 0.1, 0.3, 0.5, 0.7, 0.9 };
+
+	for (double e : eps)
+	{
+		for (double p : P)
+		{
+			x = vec2(0, 0);
+			auto start = std::chrono::high_resolution_clock::now();
+			uint64_t N = SimpleRandomSearch(f, x, e, p);
+			auto end = std::chrono::high_resolution_clock::now();
+
+			std::chrono::duration<double> span = end - start;
+			out << e << ";" << p << ";" << N << ";" << x << ";" << f(x) << ";" << span.count() << endl;
+		}
+	}
+
 	cout << endl << endl;
 
-	cout << "1" << endl;
-	Algorithm1(f, x1, 1000);
-	cout << endl << endl;
+	vec2 x1, x2, x3;
+	vector<int> M = { 20, 40, 80, 160, 320, 640, 1280, 2560, 5120, 10240 };
 
-	cout << "2" << endl;
-	Algorithm2(f, x2, 1000);
-	cout << endl << endl;
+	ofstream out1("algorithm1.csv");
+	ofstream out2("algorithm2.csv");
+	ofstream out3("algorithm3.csv");
 
-	cout << "3" << endl;
-	Algorithm3(f, x3, 1000);
-	cout << endl << endl;
+	out1 << "Количество случайных проб;Количество вычислений функций;Найденная точка;Значение функции в точке" << endl;
+	out2 << "Количество случайных проб;Количество вычислений функций;Найденная точка;Значение функции в точке" << endl;
+	out3 << "Количество случайных проб;Количество вычислений функций;Найденная точка;Значение функции в точке" << endl;
+
+	for (auto m : M)
+	{
+		int k1 = Algorithm1(f, x1, m);
+		int k2 = Algorithm2(f, x2, m);
+		int k3 = Algorithm3(f, x3, m);
+
+		out1 << m << ";" << k1 << ";" << x1 << ";" << f(x1) << endl;
+		out2 << m << ";" << k2 << ";" << x2 << ";" << f(x2) << endl;
+		out3 << m << ";" << k3 << ";" << x3 << ";" << f(x3) << endl;
+	}
+
+	out.close();
+	out1.close();
+	out2.close();
+	out3.close();
 
 	return 0;
 }
