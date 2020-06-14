@@ -69,13 +69,13 @@ int main()
 {
 	newton_info info;
 	info.x0 = vec2(2, 2);
-	info.f = f2;					// Функция
-	info.g = g2;					// Градиент
-	info.h = h2;					// Матрица вторых производных
+	info.f = f1;					// Функция
+	info.g = g1;					// Градиент
+	info.h = h1;					// Матрица вторых производных
 	info.maxiter = 100000;			// Максимальное количество итераций
 	info.minimize_eps = 1.0e-12;	// Эпсилон для одномерной минимизаций
-	info.delta = 0.001;				// Дельта для ||x(k+1) - x(k)||
-	info.eps = 0.001;				// Эпсилон для |f(k+1) - f(k)|
+	info.delta = 1.0e-15;			// Дельта для ||x(k+1) - x(k)||
+	info.eps = 1.0e-15;				// Эпсилон для |f(k+1) - f(k)|
 
 	std::vector<vec2> points1, points2, points3;	// Вектор точек
 	result_info res1, res2, res3;					// Количество итераций + количество вычислений функций

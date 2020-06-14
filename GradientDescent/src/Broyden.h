@@ -53,10 +53,11 @@ result_info broyden(broyden_info& info, std::vector<vec2>& points)
 
 		// Calculate direction
 		vec2 dx = -eta * grad0;
+		dx.normalize();
 
 		// Calculate step size
-		double lambda;
-		result.calc_count += minimize(f, x0, dx, minimize_eps, lambda);
+		double lambda = 0.0;
+		result.calc_count += minimize([&](double l) { return f(x0 + l * dx); }, lambda, minimize_eps);
 
 		// Calculate new approximation point
 		vec2 x1 = x0 + lambda * dx;

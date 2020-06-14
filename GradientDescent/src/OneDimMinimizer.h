@@ -1,21 +1,19 @@
 #pragma once
 
+#include <functional>
+#include <vector>
 #include <cmath>
-#include "Matrix.h"
 
-int golden_ratio(const func& f, vec2& a, vec2& b, const vec2& dir, double eps, double& lambda)
+int golden_ratio(std::function<double(double)> f, double a, double b, double& x, double eps = 1.0e-7)
 {
 	int k = 0;
-	double diff = (b - a).norm();
-	vec2 dir_normalized = dir.normalize();
+	double diff = (b - a);
 
-	int n = static_cast<int>(log((diff) / eps) / log((sqrt(5) + 1) / 2));
+	int n = static_cast<int>(log((b - a) / eps) / log((sqrt(5) + 1) / 2));
 	double prevDiff, ratio;
 
-	vec2 saved = a;
-
-	vec2 x1 = a + dir_normalized * 0.381966011 * diff;
-	vec2 x2 = b - dir_normalized * 0.381966011 * diff;
+	double x1 = a + 0.381966011 * diff;
+	double x2 = b - 0.381966011 * diff;
 
 	double f1 = f(x1);
 	double f2 = f(x2);
@@ -43,34 +41,85 @@ int golden_ratio(const func& f, vec2& a, vec2& b, const vec2& dir, double eps, d
 		}
 
 		prevDiff = diff;
-		diff = (b - a).norm();
+		diff = (b - a);
 
 		ratio = prevDiff / diff;
 	}
 
-	vec2 result = (x1 + x2) / 2;
-
-	vec2 dist = result - saved;
-	if (abs(dir.y) > 1.0e-10)
-	{
-		lambda = dist.y / dir.y;
-	}
-	else if (abs(dir.x) > 1.0e-10)
-	{
-		lambda = dist.x / dir.x;
-	}
-	else
-	{
-		lambda = 0;
-	}
+	x = (x1 + x2) / 2;
 
 	return k;
 }
 
-int interval(const func& f, vec2& x0, const vec2& dir, double h, vec2& x1)
+int parabola(std::function<double(double)> f, double a, double b, double& x, double eps = 1.0e-7)
+{
+	double x1 = a, x2 = x1, x3 = b;
+	double prevX = 0.0;
+	bool found = false;
+
+	do
+	{
+		prevX = x;
+		double h = (x3 - x1) / 100;
+
+		double f1 = f(x1);
+		double f3 = f(x3);
+		double f2 = 0.0;
+		for (double xi = x1 + h; xi < x3 && !found; xi += h)
+		{
+			f2 = f(xi);
+			if (f2 <= f1 && f2 <= f3)
+			{
+				found = true;
+				x2 = xi;
+			}
+		}
+
+
+		if (found)
+		{
+			found = false;
+			x = 0.5 * (x1 + x2 - ((f2 - f1) * (x3 - x2) / (x2 - x1)) / ((f3 - f1) / (x3 - x1) - (f2 - f1) / (x2 - x1)));
+
+			double fx = f(x);
+
+			if (f2 < fx)
+			{
+				if (x > x2)
+					x3 = x;
+				else
+					x1 = x;
+			}
+			else
+			{
+				if (x > x2)
+					x1 = x2;
+				else
+					x3 = x2;
+			}
+		}
+		else
+		{
+			if (f1 > f3)
+				x = f2;
+			else
+				x = x1;
+
+		}
+
+	} while (abs(x - prevX) >= eps);
+
+	return x;
+}
+
+int interval(std::function<double(double)> f, double a, double& b)
 {
 	int k = 0;
-	x1 = x0 + dir * h;
+	double h = 1.0;
+
+	double x0 = a;
+	double x1 = a + h;
+
 	double f0 = f(x0);
 	double f1 = f(x1);
 	k += 2;
@@ -78,21 +127,22 @@ int interval(const func& f, vec2& x0, const vec2& dir, double h, vec2& x1)
 	while (f0 > f1)
 	{
 		h *= 2;
-		x1 = x0 + dir * h;
+		x1 = x0 + h;
 
 		f0 = f(x0);
 		f1 = f(x1);
 		k += 2;
 	}
 
+	b = x1;
 	return k;
 }
 
-int minimize(const func& f, vec2 a, const vec2& dir, double eps, double& lambda)
+int minimize(std::function<double(double)> f, double a, double& min, double eps = 1.0e-12)
 {
-	vec2 b;
-	int k1 = interval(f, a, dir, 1.0, b);
-	int k2 = golden_ratio(f, a, b, dir, eps, lambda);
+	double b = 0.0;
+	int k1 = interval(f, a, b);
+	int k2 = parabola(f, a, b, min, eps);
 
 	return k1 + k2;
 }
