@@ -69,34 +69,18 @@ int main()
 {
 	newton_info info;
 	info.x0 = vec2(2, 2);
-	info.f = f1;					// Функция
-	info.g = g1;					// Градиент
-	info.h = h1;					// Матрица вторых производных
-	info.maxiter = 100000;			// Максимальное количество итераций
-	info.minimize_eps = 1.0e-12;	// Эпсилон для одномерной минимизаций
-	info.delta = 1.0e-15;			// Дельта для ||x(k+1) - x(k)||
-	info.eps = 1.0e-15;				// Эпсилон для |f(k+1) - f(k)|
+	info.f = f;
+	info.g = g;
+	info.h = h;
+	info.maxiter = 10000;
+	info.minimize_eps = 1.0e-1;
+	info.eps = 1.0e-7;
 
-	std::vector<vec2> points1, points2, points3;	// Вектор точек
-	result_info res1, res2, res3;					// Количество итераций + количество вычислений функций
+	std::vector<vec2> points1, points2, points3;
+	result_info res1, res2, res3;
 
 	res1 = lambda_newton(info, points1);
 	vec2 min1 = points1.back();
 
-	//Вывод всего что есть
-	points1.clear();
-
-
-	broyden_info b_info;
-	b_info.f = f2;
-	b_info.g = g2;
-	b_info.eps = 0.001;
-	b_info.minimize_eps = 1.0e-8;
-	b_info.maxiter = 100000;
-	b_info.x0 = vec2(2, 2);
-
-	res3 = broyden(b_info, points3);
-
-	vec2 min = points3[points3.size() - 2];
 	return 0;
 }

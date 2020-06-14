@@ -38,8 +38,7 @@ result_info lambda_newton(newton_info& info, std::vector<vec2>& points)
 
 	points.push_back(x0);
 
-	int line = 2;
-	while (diff_x >= delta && diff_f >= eps && result.iter_count != maxiter)
+	while (diff_f >= eps && result.iter_count != maxiter)
 	{
 
 		mat2 H = mat2(h, x0);
@@ -55,13 +54,12 @@ result_info lambda_newton(newton_info& info, std::vector<vec2>& points)
 
 		// Calculate step size
 		double lambda;
-		result.calc_count += minimize([&](double l) { return f(x0 + l * dx); }, 0.0, lambda);
+		result.calc_count += minimize([&](double l) { return f(x0 + l * dx); }, 0.0, lambda, minimize_eps);
 
 		// Calculate new approximation point
 		vec2 x1 = x0 + lambda * dx;
 		points.push_back(x1);
 
-		line += 2;
 		// Calculate ||x[k + 1] - x[k]||
 		diff_x = (x1 - x0).norm();
 

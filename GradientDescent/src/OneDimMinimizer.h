@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <vector>
+#include <cstdint>
 #include <cmath>
 
 int golden_ratio(std::function<double(double)> f, double a, double b, double& x, double eps = 1.0e-7)
@@ -53,6 +54,7 @@ int golden_ratio(std::function<double(double)> f, double a, double b, double& x,
 
 int parabola(std::function<double(double)> f, double a, double b, double& x, double eps = 1.0e-7)
 {
+	int k = 0;
 	double x1 = a, x2 = x1, x3 = b;
 	double prevX = 0.0;
 	bool found = false;
@@ -60,14 +62,16 @@ int parabola(std::function<double(double)> f, double a, double b, double& x, dou
 	do
 	{
 		prevX = x;
-		double h = (x3 - x1) / 100;
+		double h = (x3 - x1) / 1000;
 
 		double f1 = f(x1);
 		double f3 = f(x3);
+	k += 2;
 		double f2 = 0.0;
 		for (double xi = x1 + h; xi < x3 && !found; xi += h)
 		{
 			f2 = f(xi);
+			k++;
 			if (f2 <= f1 && f2 <= f3)
 			{
 				found = true;
@@ -82,6 +86,7 @@ int parabola(std::function<double(double)> f, double a, double b, double& x, dou
 			x = 0.5 * (x1 + x2 - ((f2 - f1) * (x3 - x2) / (x2 - x1)) / ((f3 - f1) / (x3 - x1) - (f2 - f1) / (x2 - x1)));
 
 			double fx = f(x);
+			k++;
 
 			if (f2 < fx)
 			{
@@ -101,7 +106,7 @@ int parabola(std::function<double(double)> f, double a, double b, double& x, dou
 		else
 		{
 			if (f1 > f3)
-				x = f2;
+				x = x3;
 			else
 				x = x1;
 
@@ -109,7 +114,59 @@ int parabola(std::function<double(double)> f, double a, double b, double& x, dou
 
 	} while (abs(x - prevX) >= eps);
 
-	return x;
+	return k;
+}
+
+int fibonacci(std::function<double(double)> f, double a, double b, double& x, double eps = 1.0e-7)
+{
+	int k = 0;
+	std::vector<int64_t> F;
+
+	F.push_back(1);
+	F.push_back(1);
+	int64_t Fn = 1;
+
+	int n = 2;
+	while (Fn < (b - a) / eps)
+	{
+		Fn = F[n - 1] + F[n - 2];
+		F.push_back(Fn);
+		n++;
+	}
+
+	n = F.size() - 2;
+
+	double x1 = a + (b - a) * F[n - 1] / F[n + 1];
+	double x2 = a + (b - a) * F[n] / F[n + 1];
+
+	double f1 = f(x1);
+	double f2 = f(x2);
+	k += 2;
+
+	for (int k = 1; k <= n; k++)
+	{
+		if (f1 < f2)
+		{
+			b = x2;
+			x2 = x1;
+			x1 = a + (b - a) * F[n - k] / F[n - k + 2];
+			f2 = f1;
+			f1 = f(x1);
+			k++;
+		}
+		else
+		{
+			a = x1;
+			x1 = x2;
+			x2 = a + (b - a) * F[n - k + 1] / F[n - k + 2];
+			f1 = f2;
+			f2 = f(x2);
+			k++;
+		}
+	}
+
+	x = (x1 + x2) / 2;
+	return k;
 }
 
 int interval(std::function<double(double)> f, double a, double& b)
@@ -142,7 +199,7 @@ int minimize(std::function<double(double)> f, double a, double& min, double eps 
 {
 	double b = 0.0;
 	int k1 = interval(f, a, b);
-	int k2 = parabola(f, a, b, min, eps);
+	int k2 = fibonacci(f, a, b, min, eps);
 
 	return k1 + k2;
 }
