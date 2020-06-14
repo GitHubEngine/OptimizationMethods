@@ -75,12 +75,17 @@ int main()
 	info.maxiter = 10000;
 	info.minimize_eps = 1.0e-1;
 	info.eps = 1.0e-7;
+	info.method = Method::parabola;
 
 	std::vector<vec2> points1, points2, points3;
 	result_info res1, res2, res3;
 
 	res1 = lambda_newton(info, points1);
 	vec2 min1 = points1.back();
+
+	info.method = Method::fibonacci;
+	res1 = lambda_newton(info, points1);
+	min1 = points1.back();
 
 	return 0;
 }

@@ -5,6 +5,13 @@
 #include <cstdint>
 #include <cmath>
 
+
+enum class Method {
+	fibonacci,
+	golden_ratio,
+	parabola
+};
+
 int golden_ratio(std::function<double(double)> f, double a, double b, double& x, double eps = 1.0e-7)
 {
 	int k = 0;
@@ -195,11 +202,20 @@ int interval(std::function<double(double)> f, double a, double& b)
 	return k;
 }
 
-int minimize(std::function<double(double)> f, double a, double& min, double eps = 1.0e-12)
+int minimize(std::function<double(double)> f, double a, double& min, Method method, double eps = 1.0e-12)
 {
 	double b = 0.0;
 	int k1 = interval(f, a, b);
-	int k2 = fibonacci(f, a, b, min, eps);
+	int k2 = 0;
+
+	if (method == Method::fibonacci)
+		k2 = fibonacci(f, a, b, min, eps);
+
+	if (method == Method::golden_ratio)
+		k2 = golden_ratio(f, a, b, min, eps);
+
+	if (method == Method::parabola)
+		k2 = parabola(f, a, b, min, eps);
 
 	return k1 + k2;
 }
